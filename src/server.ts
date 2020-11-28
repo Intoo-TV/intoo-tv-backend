@@ -14,6 +14,7 @@ const application = container.get<App>(App);
 const logger = container.get<LoggerService>(LoggerService);
 
 application.app.listen(PORT,async  () => {
+  await threadDBClient.getClient();
   logger.info("ThreadDB service init");
   logger.info("IntooTV API is listening on port " + PORT);
 });
