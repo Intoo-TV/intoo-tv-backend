@@ -18,5 +18,17 @@ services:
     networks:
       - intoo-tv
 
+  mongodb:
+    image: mongo
+    ports:
+      - 27018:27017
+    volumes:
+      - db_data:/data/db
+    networks:
+      - intoo-tv
+
+volumes:
+  db_data:
+
 networks:
   intoo-tv:

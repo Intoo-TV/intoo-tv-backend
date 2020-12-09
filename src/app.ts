@@ -4,19 +4,30 @@ import * as helmet from "helmet";
 import { injectable } from "inversify";
 import * as promBundle from "express-prom-bundle";
 import {
+  UserRouter,
+  ExperienceRouter,
+  GeneralDataRouter,
   SwaggerRouter,
 } from "./routers";
 const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 var cors = require('cors');
+import './db/mongoose'
+import { UserSchema } from "./models";
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const LocalStrategy = require('passport-local').Strategy;
+const JwtStrategy = require('passport-jwt').Strategy;
 
 @injectable()
 export class App {
   private _app: express.Application;
 
   constructor(
-    private swaggerRouter: SwaggerRouter
+    private swaggerRouter: SwaggerRouter,
+    private experienceRouter: ExperienceRouter,
+    private userRouter: UserRouter,
+    private generalDataRouter: GeneralDataRouter
   ) {
     this._app = express();
     this.config();
@@ -31,6 +42,45 @@ export class App {
       includeMethod: true,
       includePath: true
     });
+
+
+    passport.use(new LocalStrategy({
+      usernameField: 'email',
+      passwordField: 'password'
+    },
+      function (email, password, cb) {
+        return UserSchema.findOne({ email, password })
+          .then(user => {
+            if (!user) {
+              return cb(null, false, { message: 'Incorrect email or password.' });
+            }
+            console.log('nameren');
+            return cb(null, user, { message: 'Logged In Successfully' });
+          })
+          .catch(err => cb(err));
+      }
+    ));
+
+    var opts: any = {}
+    opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+    opts.secretOrKey = 'secret';
+    passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
+      console.log('asdasdasdsadsda');
+      UserSchema.findOne({ id: jwt_payload.sub }, function (err, user) {
+        if (err) {
+          return done(err, false);
+        }
+        if (user) {
+          return done(null, user);
+        } else {
+          return done(null, false);
+          // or you could create a new account
+        }
+      });
+
+    }));
+
+
     this._app.use(metricsMiddleware);
 
     // support application/json
@@ -50,5 +100,8 @@ export class App {
 
   private _initRoutes() {
     this._app.use("/api/docs", this.swaggerRouter.router);
+    this._app.use("/api/experience", this.experienceRouter.router);
+    this._app.use("/api/user", this.userRouter.router);
+    this._app.use("/api", this.generalDataRouter.router);
   }
 }

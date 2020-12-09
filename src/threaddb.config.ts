@@ -1,52 +1,38 @@
 import { Buckets, Client, KeyInfo, ThreadID } from '@textile/hub'
 import { injectable } from 'inversify';
+import { generateQRCode } from './services';
+import { v4 as uuidv4 } from 'uuid';
+import uuid = require('uuid');
+import * as fs from 'fs';
 
 const keyInfo: KeyInfo = {
   key: 'bqbeg4w4u6ewltnejxwmvu6ngwu',
   secret: 'bh24lv4dxie5dabwnl75y3onzphkvlqhyf56dlba'
 }
 
-@injectable()
-class ThreadDBInit {
-  client: Client;
-  buckets: Buckets;
-  bucketKey: string;
+const bucketName = 'intooTV';
 
-  public async getClient(): Promise<Client> {
-    if (!this.client)
-      await this.initialize();
-
-    return this.client;
-  }
-
-  async getOrCreate(bucketName: string) {
-    const buckets = await Buckets.withKeyInfo(keyInfo)
-    // Automatically scopes future calls on `buckets` to the Thread containing the bucket
-    const { root, threadID } = await buckets.getOrCreate(bucketName)
-    if (!root) throw new Error('bucket not created')
-    const bucketKey = root.key
-    return { buckets, bucketKey }
-  }
-  
-  
-async add() {
-  const buf = Buffer.from(JSON.stringify({name: 'milena', age: 25, bla: 'blabla'}))
-  const path = `index.json`
-  const a = await this.buckets.pushPath(this.bucketKey, path, buf)
-  console.log(a);
+export async function pushNFT(imagePath: string, json: any, jsonName: string) {
+  const buckets = await Buckets.withKeyInfo(keyInfo)
+  const { root, threadID } = await buckets.getOrCreate(bucketName)
+  if (!root) throw new Error('bucket not created')
+  const bucketKey = root.key
+  let imageBuffer = undefined;
+  fs.readFile(imagePath, async (err, data) => {
+    if (err) throw err; 
+    let str = data.toString('base64')
+    imageBuffer = Buffer.from(str, 'base64');
+    const path = `${uuidv4()}.png`
+    await buckets.pushPath(root.key, path, imageBuffer, { root })
+    const imageUrl =`https://hub.textile.io/thread/bafkwfcy3l745x57c7vy3z2ss6ndokatjllz5iftciq4kpr4ez2pqg3i/buckets/bafzbeiaorr5jomvdpeqnqwfbmn72kdu7vgigxvseenjgwshoij22vopice/${path}`;
+    json.properties.image = imageUrl;
+    pushJSONDocument(json, jsonName);
+  });
 }
-  
-  async initialize() {
-    const res = await this.getOrCreate('intooTV');
-    this.buckets = res.buckets;
-    this.bucketKey = res.bucketKey;
-
-    await this.add();
-    console.log('done');
-  }
+async function pushJSONDocument(json: any, fileName: string) {
+  const buckets = await Buckets.withKeyInfo(keyInfo)
+  const { root, threadID } = await buckets.getOrCreate(bucketName)
+  if (!root) throw new Error('bucket not created')
+  const buf = Buffer.from(JSON.stringify(json))
+  await buckets.pushPath(root.key, fileName, buf, { root })
 }
-
-
-const threadDBClient = new ThreadDBInit();
-threadDBClient.getClient();
-export default threadDBClient;
