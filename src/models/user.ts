@@ -42,7 +42,7 @@ const userSchema: Schema = new Schema({
         unique: true
     },
     balance: {
-        type: String,
+        type: Number,
         required: true,
         default: 10,
     },

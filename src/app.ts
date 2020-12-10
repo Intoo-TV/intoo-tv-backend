@@ -54,7 +54,6 @@ export class App {
             if (!user) {
               return cb(null, false, { message: 'Incorrect email or password.' });
             }
-            console.log('nameren');
             return cb(null, user, { message: 'Logged In Successfully' });
           })
           .catch(err => cb(err));
@@ -65,7 +64,6 @@ export class App {
     opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
     opts.secretOrKey = 'secret';
     passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
-      console.log('asdasdasdsadsda');
       UserSchema.findOne({ id: jwt_payload.sub }, function (err, user) {
         if (err) {
           return done(err, false);

@@ -12,6 +12,7 @@ services:
       - ENVIRONMENT_IP=localhost
       - SERVER_PORT=3005
       - NODE_ENV=development
+      - DEV_DB=mongodb://mongodb:27017/intooTV
     ports:
       - "3005:3005"
     command: /bin/bash -c 'yarn; yarn start;'
