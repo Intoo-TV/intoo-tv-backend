@@ -58,14 +58,8 @@ export class UserController {
 
     public getBalance = async (req: any, res: Response) => {
         try {
-
-            const user: User = req.user;
-            const ethAddr: string = req.params.ethAddress;
-            if (user.ethAddress !== ethAddr) {
-                res.status(403).send({ error: 'You do not have access to the balance of this address' });
-            } else {
-                res.status(200).send({ balance: user.balance })
-            }
+            const user = await UserSchema.findOne({ ethAddress: req.params.ethAddress });
+            res.status(200).send({ balance: user.balance })
         } catch (err) {
             console.log(err);
             res.status(500).send({ error: "Something went wrong, please try again later." });
