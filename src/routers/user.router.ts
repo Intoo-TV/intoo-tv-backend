@@ -14,6 +14,8 @@ export class UserRouter {
 
   private init(): void {
     this._router.post("/", this.userController.post);
+    this._router.put("/", passport.authenticate('jwt', {session: false}), this.userController.put);
+    this._router.get("/", passport.authenticate('jwt', {session: false}), this.userController.get);
     this._router.post("/login", this.userController.login);
     this._router.get("/:ethAddress/balance", this.userController.getBalance);
   }

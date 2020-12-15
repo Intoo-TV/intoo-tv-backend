@@ -29,6 +29,40 @@ export class UserController {
             res.status(500).send({ error: "Something went wrong, please try again later." });
         }
     }
+
+    public put = async (req: any, res: Response) => {
+        try {
+            const userData: User = req.body;
+            const user = await UserSchema.findOne({ email: req.user.email });
+            const updated = await UserSchema.findOneAndUpdate({ email: req.user.email }, {
+                balance: userData.balance ? userData.balance : user.balance,
+                nickname: userData.nickname ? userData.nickname : user.nickname,
+                interests: userData.interests,
+                favoritePlaces: userData.favoritePlaces
+            });
+            updated.password = undefined;
+            
+            res.status(200).send(updated);
+
+        } catch (err) {
+            console.log(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+
+
+    public get = async (req: any, res: Response) => {
+        try {
+            const user = await UserSchema.findOne({ email: req.user.email });
+            user.password = undefined;
+            res.status(200).send(user);
+        } catch (err) {
+            console.log(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+
+
     private createCookie(tokenData: TokenData) {
         return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn}`;
     }
