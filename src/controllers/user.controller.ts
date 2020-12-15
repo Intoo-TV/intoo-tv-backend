@@ -63,9 +63,6 @@ export class UserController {
     }
 
 
-    private createCookie(tokenData: TokenData) {
-        return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn}`;
-    }
 
     public login = async (req: any, res: Response) => {
         try {
@@ -76,7 +73,6 @@ export class UserController {
                 if (isPasswordMatching) {
                     user.password = undefined;
                     const tokenData = createToken(user);
-                    res.setHeader('Set-Cookie', [this.createCookie(tokenData)]);
                     res.status(200).send(tokenData);
                 } else {
                     res.status(401).send({ error: "Invalid user email." });

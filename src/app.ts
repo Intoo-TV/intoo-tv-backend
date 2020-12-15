@@ -64,7 +64,7 @@ export class App {
     opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
     opts.secretOrKey = 'secret';
     passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
-      UserSchema.findOne({ id: jwt_payload.sub }, function (err, user) {
+      UserSchema.findById(jwt_payload._id, function (err, user) {
         if (err) {
           return done(err, false);
         }
