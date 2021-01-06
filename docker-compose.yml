@@ -1,23 +1,23 @@
 version: '3.4'
 
 services:
-  # intoo-tv-api:
-  #   container_name: intoo-tv-api
-  #   image: node
-  #   volumes:
-  #     - .:/app
-  #   working_dir: /app
-  #   environment:
-  #     - SWAGGER_URL=http://localhost:3005/api/docs  
-  #     - ENVIRONMENT_IP=localhost
-  #     - SERVER_PORT=3005
-  #     - NODE_ENV=development
-  #     - DEV_DB=mongodb://mongodb:27017/intooTV
-  #   ports:
-  #     - "3005:3005"
-  #   command: /bin/bash -c 'yarn; yarn start;'
-  #   networks:
-  #     - intoo-tv
+  intoo-tv-api:
+    container_name: intoo-tv-api
+    image: node
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - SWAGGER_URL=http://localhost:3005/api/docs  
+      - ENVIRONMENT_IP=localhost
+      - SERVER_PORT=3005
+      - NODE_ENV=development
+      - DEV_DB=mongodb://mongodb:27017/intooTV
+    ports:
+      - "3005:3005"
+    command: /bin/bash -c 'yarn; yarn start;'
+    networks:
+      - intoo-tv
 
   mongodb:
     image: mongo
