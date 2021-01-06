@@ -37,7 +37,6 @@ const tokenIDSchema: Schema = new Schema( {
   tokenID: {
     type: String, 
     required: true,
-    unique: true
   },
   active: {
     type: Boolean,

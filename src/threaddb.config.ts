@@ -8,9 +8,7 @@ const keyInfo: KeyInfo = {
   secret: process.env.TEXTILE_SECRET
 }
 
-console.log(keyInfo);
 const bucketName = process.env.BUCKET_NAME
-console.log(bucketName);
 
 export async function pushNFT(imagePath: string, json: any, jsonName: string) {
   const buckets = await Buckets.withKeyInfo(keyInfo)

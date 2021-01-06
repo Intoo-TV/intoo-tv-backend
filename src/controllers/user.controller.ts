@@ -17,6 +17,7 @@ export class UserController {
             } else {
                 const hashedPassword = await bcrypt.hash(userData.password, 10);
                 userData.password = undefined;
+                userData.tokenIDs = [];
                 const user = await UserSchema.create({
                     ...userData,
                     password: hashedPassword,
