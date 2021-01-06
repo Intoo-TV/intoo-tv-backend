@@ -14,7 +14,7 @@ export class ExperienceController {
      * @swagger
      * /experience:
      *  push:
-     *      description: Stores the NFT data in textile
+     *      description: Stores the NFT data on textile
      *      tags:
      *          - Experience
      *      parameters:
@@ -36,7 +36,7 @@ export class ExperienceController {
             const validationResult = validateExperience(req.body);
             if (validationResult.isValid) {
                 const url = await storeNFT(req.body);
-                res.status(201).send({ url: url });
+                res.status(201).send(url);
             } else {
                 res.status(400).send(validationResult);
             }

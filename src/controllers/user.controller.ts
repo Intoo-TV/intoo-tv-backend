@@ -41,7 +41,7 @@ export class UserController {
                 favoritePlaces: userData.favoritePlaces
             });
             updated.password = undefined;
-            
+
             res.status(200).send(updated);
 
         } catch (err) {
@@ -90,6 +90,18 @@ export class UserController {
         try {
             const user = await UserSchema.findOne({ ethAddress: req.params.ethAddress });
             res.status(200).send({ balance: user.balance })
+        } catch (err) {
+            console.log(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+
+    public addTokenID = async (req: any, res: Response) => {
+        try {
+            const user = await UserSchema.findOne({ email: req.user.email });
+            user.tokenIDs.push({tokenID: req.body.tokenID, active: true });
+            user.save();
+            res.status(200).send();
         } catch (err) {
             console.log(err);
             res.status(500).send({ error: "Something went wrong, please try again later." });

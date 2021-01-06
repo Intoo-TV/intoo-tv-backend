@@ -1,16 +1,16 @@
 import { Buckets, Client, KeyInfo, ThreadID } from '@textile/hub'
-import { injectable } from 'inversify';
-import { generateQRCode } from './services';
 import { v4 as uuidv4 } from 'uuid';
-import uuid = require('uuid');
 import * as fs from 'fs';
+require('dotenv').config()
 
 const keyInfo: KeyInfo = {
-  key: 'bqbeg4w4u6ewltnejxwmvu6ngwu',
-  secret: 'bh24lv4dxie5dabwnl75y3onzphkvlqhyf56dlba'
+  key: process.env.TEXTILE_KEY,
+  secret: process.env.TEXTILE_SECRET
 }
 
-const bucketName = 'intooTV';
+console.log(keyInfo);
+const bucketName = process.env.BUCKET_NAME
+console.log(bucketName);
 
 export async function pushNFT(imagePath: string, json: any, jsonName: string) {
   const buckets = await Buckets.withKeyInfo(keyInfo)
