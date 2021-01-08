@@ -1,5 +1,5 @@
 import * as qr from 'qr-image';
-import { pushNFT } from '../threaddb.config'
+import { pushNFT } from '../textile.config'
 import { v4 as uuidv4 } from 'uuid';
 
 

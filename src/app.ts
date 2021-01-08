@@ -1,8 +1,7 @@
-import * as express from "express";
+import express from "express";
 import * as bodyParser from "body-parser";
-import * as helmet from "helmet";
+import helmet from "helmet";
 import { injectable } from "inversify";
-import * as promBundle from "express-prom-bundle";
 import {
   UserRouter,
   ExperienceRouter,
@@ -18,6 +17,7 @@ import { UserSchema } from "./models";
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const LocalStrategy = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
+require('dotenv').config()
 
 @injectable()
 export class App {
@@ -38,10 +38,10 @@ export class App {
   }
 
   private config(): void {
-    const metricsMiddleware = promBundle({
-      includeMethod: true,
-      includePath: true
-    });
+    // const metricsMiddleware = promBundle({
+    //   includeMethod: true,
+    //   includePath: true
+    // });
 
 
     passport.use(new LocalStrategy({
@@ -79,7 +79,7 @@ export class App {
     }));
 
 
-    this._app.use(metricsMiddleware);
+    // this._app.use(metricsMiddleware);
 
     // support application/json
     this._app.use(bodyParser.json());

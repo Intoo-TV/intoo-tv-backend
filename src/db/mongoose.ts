@@ -1,7 +1,5 @@
-import * as mongoose from "mongoose";
+import mongoose from "mongoose";
 import { config } from "dotenv";
-import { bucketsPullPathAccessRoles } from "@textile/hub";
-import { InterestSchema, PlaceSchema } from "../models";
 
 config();
 

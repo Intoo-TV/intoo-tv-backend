@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { injectable } from "inversify";
-import * as swaggerJSDoc from "swagger-jsdoc";
+import swaggerJSDoc from "swagger-jsdoc";
 import * as swaggerUi from "swagger-ui-express";
 
 @injectable()

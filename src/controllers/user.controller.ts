@@ -1,13 +1,13 @@
 import * as bcrypt from 'bcrypt';
-import { Response } from "express";
-import { TokenData, User, UserSchema } from '../models/user';
+import { User, UserSchema } from '../models/user';
 import { injectable } from "inversify";
 import { createToken } from '../services/auth.service';
+import { addToWhitelist } from "../contracts";
 
 @injectable()
 export class UserController {
 
-    public post = async (req: any, res: Response) => {
+    public post = async (req: any, res: any) => {
         try {
             const userData: User = req.body;
             if (await UserSchema.findOne({ email: userData.email })) {
@@ -22,6 +22,8 @@ export class UserController {
                     ...userData,
                     password: hashedPassword,
                 });
+                addToWhitelist(userData.ethAddress);
+
                 user.password = undefined;
                 res.status(201).send(user);
             }
@@ -31,7 +33,7 @@ export class UserController {
         }
     }
 
-    public put = async (req: any, res: Response) => {
+    public put = async (req: any, res: any) => {
         try {
             const userData: User = req.body;
             const user = await UserSchema.findOne({ email: req.user.email });
@@ -52,7 +54,7 @@ export class UserController {
     }
 
 
-    public get = async (req: any, res: Response) => {
+    public get = async (req: any, res: any) => {
         try {
             const user = await UserSchema.findOne({ email: req.user.email });
             user.password = undefined;
@@ -65,7 +67,7 @@ export class UserController {
 
 
 
-    public login = async (req: any, res: Response) => {
+    public login = async (req: any, res: any) => {
         try {
             const logInData = req.body;
             const user = await UserSchema.findOne({ email: logInData.email });
@@ -87,7 +89,7 @@ export class UserController {
         }
     }
 
-    public getBalance = async (req: any, res: Response) => {
+    public getBalance = async (req: any, res: any) => {
         try {
             const user = await UserSchema.findOne({ ethAddress: req.params.ethAddress });
             res.status(200).send({ balance: user.balance })
@@ -97,7 +99,7 @@ export class UserController {
         }
     }
 
-    public addTokenID = async (req: any, res: Response) => {
+    public addTokenID = async (req: any, res: any) => {
         try {
             const user = await UserSchema.findOne({ email: req.user.email });
             user.tokenIDs.push({tokenID: req.body.tokenID, active: true });
