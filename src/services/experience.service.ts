@@ -1,6 +1,11 @@
 import * as qr from 'qr-image';
 import { pushNFT } from '../textile.config'
 import { v4 as uuidv4 } from 'uuid';
+import {
+    ExperienceSchema,
+    ValidationResult,
+    ExperienceNFT
+} from '../models';
 
 
 
@@ -21,14 +26,30 @@ export function validateExperience(experience: any): ValidationResult {
 }
 
 
-export async function storeNFT(nft: ExperienceNFT) {
+export function validateTokenID(experience: any): ValidationResult {
+    if (!experience.tokenID) {
+        return { isValid: false, message: 'tokenID is required' }
+    }
+    if (!experience.url) {
+        return { isValid: false, message: 'Url is requried. ' }
+    }
+    return { isValid: true, message: 'The experience is valid.' }
+}
+
+
+export async function storeNFT(tokenID: string, nft: ExperienceNFT) {
     const jsonRandomName = `${uuidv4()}.json`;
-
     await generateQRCode();
-    await pushNFT('./qrCode.png', nft, jsonRandomName);
+    const url = await pushNFT('./qrCode.png', nft, jsonRandomName);
+    return { url };
+}
 
-    return { url: `https://hub.textile.io/thread/bafkwfcy3l745x57c7vy3z2ss6ndokatjllz5iftciq4kpr4ez2pqg3i/buckets/bafzbeiaorr5jomvdpeqnqwfbmn72kdu7vgigxvseenjgwshoij22vopice/${jsonRandomName}` };
-
+export async function storeTokenIDNFTUrl(tokenID: string, url: string): Promise<void> {
+    await ExperienceSchema.create({
+        tokenID,
+        url,
+        expired: false
+    })
 }
 
 function generateRandomSequence(): string {
@@ -38,18 +59,4 @@ function generateRandomSequence(): string {
 export async function generateQRCode() {
     var qr_svg = qr.image(generateRandomSequence(), { type: 'png' });
     qr_svg.pipe(require('fs').createWriteStream('qrCode.png'));
-}
-export interface ValidationResult {
-    isValid: boolean;
-    message: string;
-}
-export interface ExperienceNFT {
-    title: string;
-    properties: NFTProperties;
-}
-
-export interface NFTProperties {
-    name: string;
-    description: string;
-    image: string;
 }

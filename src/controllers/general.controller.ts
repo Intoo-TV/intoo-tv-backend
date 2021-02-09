@@ -1,10 +1,4 @@
-import * as bcrypt from 'bcrypt';
-import * as express from 'express';
-import { Response } from "express";
-import { TokenData, User, UserSchema } from '../models/user';
 import { injectable } from "inversify";
-import { createToken } from '../services/auth.service';
-import { bucketsPullPathAccessRoles } from '@textile/hub';
 import { InterestSchema, PlaceSchema } from '../models';
 
 @injectable()

@@ -13,6 +13,8 @@ export class ExperienceRouter {
 
   private init(): void {
     this._router.post("/", this.experienceController.post);
+    this._router.get("/", this.experienceController.get);
+    this._router.post("/tokenID", this.experienceController.postTokenID);
   }
 
   public get router(): Router {

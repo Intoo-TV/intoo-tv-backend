@@ -10,27 +10,29 @@ const keyInfo: KeyInfo = {
 
 const bucketName = process.env.BUCKET_NAME
 
-export async function pushNFT(imagePath: string, json: any, jsonName: string) {
+export async function pushNFT(imagePath: string, json: any, jsonName: string): Promise<string> {
+  const imageUrl = await pushImage(imagePath)
+  json.properties.image = imageUrl;
+  const jsonLink = await pushJSONDocument(json, jsonName);
+  return jsonLink;
+}
+
+async function pushImage(imagePath: string): Promise<string> {
   const buckets = await Buckets.withKeyInfo(keyInfo)
   const { root, threadID } = await buckets.getOrCreate(bucketName)
   if (!root) throw new Error('bucket not created')
   const bucketKey = root.key
   let imageBuffer = undefined;
-  fs.readFile(imagePath, async (err, data) => {
-    if (err) throw err; 
-    let str = data.toString('base64')
-    imageBuffer = Buffer.from(str, 'base64');
-    const path = `${uuidv4()}.png`
-    await buckets.pushPath(root.key, path, imageBuffer, { root })
-    const imageUrl =`https://hub.textile.io/thread/bafkwfcy3l745x57c7vy3z2ss6ndokatjllz5iftciq4kpr4ez2pqg3i/buckets/bafzbeiaorr5jomvdpeqnqwfbmn72kdu7vgigxvseenjgwshoij22vopice/${path}`;
-    json.properties.image = imageUrl;
-    pushJSONDocument(json, jsonName);
-  });
+  const file = fs.readFileSync(imagePath);
+  const path = `${uuidv4()}.png`
+  const links = await buckets.pushPath(root.key, path, file, { root })
+  return `https://hub.textile.io${links.path.path}`;
 }
-async function pushJSONDocument(json: any, fileName: string) {
+async function pushJSONDocument(json: any, fileName: string): Promise<string> {
   const buckets = await Buckets.withKeyInfo(keyInfo)
   const { root, threadID } = await buckets.getOrCreate(bucketName)
   if (!root) throw new Error('bucket not created')
   const buf = Buffer.from(JSON.stringify(json))
-  await buckets.pushPath(root.key, fileName, buf, { root })
+  const links = await buckets.pushPath(root.key, fileName, buf, { root })
+  return `https://hub.textile.io${links.path.path}`;
 }
