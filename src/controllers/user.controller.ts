@@ -4,6 +4,7 @@ import { injectable } from "inversify";
 import { createToken } from '../services/auth.service';
 import { addToWhitelist } from "../contracts";
 import { ExperienceSchema } from '../models';
+import { tip } from '../services';
 
 @injectable()
 export class UserController {
@@ -110,6 +111,23 @@ export class UserController {
                 return res.status(200).send(experiences);
             } else {
                 return res.status(401).send({ error: "Unauthorized user." })
+            }
+        } catch (err) {
+            console.log(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+    public tipUser = async (req: any, res: any) => {
+        try {
+            const user = await UserSchema.findOne({ email: req.user.email });
+            if (!user) {
+                return res.status(401).send({ error: "Unauthorized user! " });
+            }
+            const result = await tip(user.id, req.body.userID, req.body.amount);
+            if (result.isValid) {
+                res.status(200).send();
+            } else {
+                res.status(400).send(result);
             }
         } catch (err) {
             console.log(err);

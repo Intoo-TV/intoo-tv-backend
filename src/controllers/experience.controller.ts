@@ -4,8 +4,11 @@ import { ExperienceNFT, ExperienceSchema, UserSchema } from "../models";
 import {
     buyExperience,
     LoggerService,
+    rateExperience,
+    startExperience,
     storeExperience,
     storeNFT,
+    tip,
     validateExperience,
     validateNFTProps,
 } from "../services";
@@ -45,7 +48,6 @@ export class ExperienceController {
             res.status(500).send({ error: "Something went wrong, please try again later." });
         }
     }
-
 
     public post = async (req: any, res: Response) => {
         try {
@@ -87,7 +89,46 @@ export class ExperienceController {
             res.status(500).send({ error: "Something went wrong, please try again later." });
         }
     }
+    public start = async (req: any, res: Response) => {
+        try {
+            const user = await UserSchema.findOne({ email: req.user.email });
+            if (!user) {
+                return res.status(401).send({ error: "Unauthorized user! " });
+            }
+            const guestID: string = user.id;
 
+            const experienceID: string = req.params.experienceID;
+            const result = await startExperience(guestID, experienceID);
+            if (result.isValid) {
+                res.status(200).send();
+            } else {
+                res.status(400).send(result);
+            }
+        } catch (err) {
+            this.loggerService.error(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+
+    public rate = async (req: any, res: Response) => {
+        try {
+            const user = await UserSchema.findOne({ email: req.user.email });
+            if (!user) {
+                return res.status(401).send({ error: "Unauthorized user! " });
+            }
+            const guestID: string = user.id;
+            const experienceID: string = req.params.experienceID;
+            const result = await rateExperience(guestID, experienceID, req.body.rate);
+            if (result.isValid) {
+                res.status(200).send();
+            } else {
+                res.status(400).send(result);
+            }
+        } catch (err) {
+            this.loggerService.error(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
 
     public get = async (req: any, res: Response) => {
         try {

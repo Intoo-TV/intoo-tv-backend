@@ -8,6 +8,7 @@ export interface Experience {
     guestID: string; 
     start: Date;
     duration: number;
+    rate?: number;
 }
 
 export interface ExperienceModel extends Experience, Document { }
@@ -44,6 +45,11 @@ const experienceSchema: Schema = new Schema({
     duration: {
         type: Number,
         required: true,
+    },
+    rate: {
+        type: Number,
+        required: false,
+        default: undefined
     },
     
 });

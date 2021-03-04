@@ -12,8 +12,6 @@ import {
 } from '../models';
 import { Users } from '@textile/hub';
 
-
-
 export function validateNFTProps(nft: ExperienceNFT): ValidationResult {
     if (!nft.title) {
         return { isValid: false, message: 'Title is requried. ' }
@@ -30,7 +28,6 @@ export function validateNFTProps(nft: ExperienceNFT): ValidationResult {
     return { isValid: true, message: 'The experience is valid.' }
 }
 
-
 export function validateExperience(experience: Experience): ValidationResult {
     if (!experience.url) {
         return { isValid: false, message: 'URL is required' }
@@ -45,7 +42,6 @@ export function validateExperience(experience: Experience): ValidationResult {
     }
     return { isValid: true, message: 'The experience is valid.' }
 }
-
 
 export async function storeNFT(nft: ExperienceNFT): Promise<any> {
     const jsonRandomName = `${uuidv4()}.json`;
@@ -74,15 +70,12 @@ export async function buyExperience(guestID: string, experienceID: string): Prom
     if (experience.guestID) {
         return { isValid: false, message: "This experience has one guest already." };
     }
-      
+
     if (guest.balance < experience.duration) {
         return { isValid: false, message: "The guest doesn't have enough exp tokens!" };
     }
 
-    const hostID = experience.hostID;
-    const host = await UserSchema.findById(hostID);
-    
-    await transferTokens(guest, host, experience.duration);
+    await lockBalance(guest, experience.duration);
 
     experience.guestID = guestID;
     await experience.save();
@@ -90,13 +83,76 @@ export async function buyExperience(guestID: string, experienceID: string): Prom
     return { isValid: true, message: "Assigned guest to the experience." };
 }
 
-async function transferTokens(from: UserModel, to: UserModel, amount: number): Promise<ValidationResult> {
-    if (from.balance < amount) {
+async function transferLockedTokens(fromID: string, toID: string, amount: number): Promise<ValidationResult> {
+    const from = await UserSchema.findById(fromID);
+    const to = await UserSchema.findById(toID);
+
+    if (from.lockedBalance < amount) {
         return { isValid: false, message: "The guest doesn't have enough exp tokens!" };
     }
 
-    from.balance = from.balance - amount;
-    to.balance = to.balance - amount;
+    from.lockedBalance -= amount;
+    from.balance -= amount;
+
+    to.balance += amount;
+
+    await from.save();
+    await to.save();
+
+    return { isValid: true, message: "Transfer completed." };
+}
+
+export async function startExperience(guestID: string, experienceID: string): Promise<ValidationResult> {
+    const experience = await ExperienceSchema.findById(experienceID);
+    if (experience) {
+        if (experience.guestID !== guestID)
+            return { isValid: false, message: "Only the guest can start the experience." }
+        experience.expired = true;
+        experience.save();
+        return { isValid: true, message: "Experience started!" }
+    } else {
+        return { isValid: false, message: "Invalid experience." }
+    }
+}
+
+export async function rateExperience(guestID: string, experienceID: string, rate: number): Promise<ValidationResult> {
+    const experience = await ExperienceSchema.findById(experienceID);
+    if (experience) {
+        if (experience.guestID !== guestID)
+            return { isValid: false, message: "Only the guest can rate the experience." }
+        if(!experience.expired) {
+            return { isValid: false, message: "Experience hasn't finished yet." }
+        }
+        transferLockedTokens(experience.guestID, experience.hostID, experience.duration);
+        experience.rate = rate;
+        experience.save();
+        return { isValid: true, message: "Rate stored!" }
+    } else {
+        return { isValid: false, message: "Invalid experience." }
+    }
+}
+
+async function lockBalance(user: UserModel, amount: number): Promise<ValidationResult> {
+    if (user.balance - user.lockedBalance < amount) {
+        return { isValid: false, message: "The user doesn't have enough credits!" };
+    }
+    user.lockedBalance += amount;
+
+    await user.save();
+
+    return { isValid: true, message: "Transfer completed." };
+}
+
+export async function tip(fromID: string, toID: string, amount: number): Promise<ValidationResult> {
+    const from = await UserSchema.findById(fromID);
+    const to = await UserSchema.findById(toID);
+
+    if (from.balance < amount) {
+        return { isValid: false, message: "The tipper doesn't have enough credits!" };
+    }
+
+    from.balance -= amount;
+    to.balance += amount;
 
     await from.save();
     await to.save();

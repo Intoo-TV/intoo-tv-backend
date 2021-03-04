@@ -19,6 +19,7 @@ export interface User {
   nickname: string;
   email: string;
   balance: number;
+  lockedBalance: number;
   password: string;
   ethAddress: string;
   interests: string[];
@@ -52,6 +53,11 @@ const userSchema: Schema = new Schema({
     type: Number,
     required: true,
     default: 10,
+  },
+  lockedBalance: {
+    type: Number,
+    required: true,
+    default: 0,
   },
   interests: {
     type: Array,
