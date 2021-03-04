@@ -1,6 +1,7 @@
 import { injectable } from "inversify";
 import { Router } from "express";
 import { ExperienceController } from "../controllers";
+const passport = require("passport");
 
 @injectable()
 export class ExperienceRouter {
@@ -12,9 +13,10 @@ export class ExperienceRouter {
   }
 
   private init(): void {
-    this._router.post("/", this.experienceController.post);
-    this._router.get("/", this.experienceController.get);
-    this._router.post("/tokenID", this.experienceController.postTokenID);
+    this._router.post("/",passport.authenticate('jwt', {session: false}), this.experienceController.post);
+    this._router.get("/",passport.authenticate('jwt', {session: false}), this.experienceController.get);
+    this._router.post("/nft",passport.authenticate('jwt', {session: false}), this.experienceController.postNFT);
+    this._router.post("/:experienceID/buy",passport.authenticate('jwt', {session: false}), this.experienceController.buy);
   }
 
   public get router(): Router {

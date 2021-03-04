@@ -23,27 +23,12 @@ export interface User {
   ethAddress: string;
   interests: string[];
   favoritePlaces: string[];
-  tokenIDs: TokenID[];
 }
 
-export interface TokenID {
-  tokenID: string;
-  active: boolean;
-}
 export interface UserModel extends User, Document { }
 
 
-const tokenIDSchema: Schema = new Schema( {
-  tokenID: {
-    type: String, 
-    required: true,
-  },
-  active: {
-    type: Boolean,
-    required: true,
-    default: true
-  }
-})
+
 const userSchema: Schema = new Schema({
   email: {
     type: String,
@@ -77,11 +62,6 @@ const userSchema: Schema = new Schema({
     type: Array,
     required: false,
     default: []
-  },
-  tokenIDs: {
-    type: [tokenIDSchema], 
-    required: false, 
-    default: [], 
   }
 });
 

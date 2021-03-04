@@ -3,6 +3,7 @@ import { User, UserSchema } from '../models/user';
 import { injectable } from "inversify";
 import { createToken } from '../services/auth.service';
 import { addToWhitelist } from "../contracts";
+import { ExperienceSchema } from '../models';
 
 @injectable()
 export class UserController {
@@ -17,7 +18,6 @@ export class UserController {
             } else {
                 const hashedPassword = await bcrypt.hash(userData.password, 10);
                 userData.password = undefined;
-                userData.tokenIDs = [];
                 const user = await UserSchema.create({
                     ...userData,
                     password: hashedPassword,
@@ -99,12 +99,18 @@ export class UserController {
         }
     }
 
-    public addTokenID = async (req: any, res: any) => {
+    public getExperiences = async (req: any, res: any) => {
         try {
             const user = await UserSchema.findOne({ email: req.user.email });
-            user.tokenIDs.push({tokenID: req.body.tokenID, active: true });
-            user.save();
-            res.status(200).send();
+            const past: boolean = req.query.past === 'true';
+            if (user) {
+                const experiences = await ExperienceSchema.find({
+                    $and: [{ expired: past }, { $or: [{ hostID: user.id }, { guestID: user.id }] }]
+                }).exec();
+                return res.status(200).send(experiences);
+            } else {
+                return res.status(401).send({ error: "Unauthorized user." })
+            }
         } catch (err) {
             console.log(err);
             res.status(500).send({ error: "Something went wrong, please try again later." });
