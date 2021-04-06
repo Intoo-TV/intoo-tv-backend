@@ -11,8 +11,6 @@ services:
       - .:/app
     working_dir: /app
     environment:
-      - SWAGGER_URL=http://3.250.29.111:3005/api/docs  
-      - ENVIRONMENT_IP=3.250.29.111
       - SERVER_PORT=3005
       - NODE_ENV=production
       - MAGIC_SECRET_KEY=sk_live_B4234DDF6AE0251D

@@ -10,43 +10,32 @@ import {
     UserSchema,
     UserModel
 } from '../models';
-import { Users } from '@textile/hub';
 
-export function validateNFTProps(nft: ExperienceNFT): ValidationResult {
-    if (!nft.title) {
-        return { isValid: false, message: 'Title is requried. ' }
+export function validateExperience(exp: ExperienceNFT): ValidationResult {
+    if (!exp.title) {
+        return { isValid: false, message: 'Property title is requried field.' }
     }
-    if (!nft.properties) {
-        return { isValid: false, message: 'Properties are requried field.' }
-    }
-    if (!nft.properties.name) {
-        return { isValid: false, message: 'Property name is requried field.' }
-    }
-    if (!nft.properties.description) {
+    if (!exp.description) {
         return { isValid: false, message: 'Property description is requried field.' }
     }
-    return { isValid: true, message: 'The experience is valid.' }
-}
-
-export function validateExperience(experience: Experience): ValidationResult {
-    if (!experience.url) {
-        return { isValid: false, message: 'URL is required' }
-    } if (!experience.tokenID) {
-        return { isValid: false, message: 'TokenID is required' }
-    }
-    if (!experience.start) {
+    if (!exp.start) {
         return { isValid: false, message: 'Start is requried. ' }
     }
-    if (!experience.duration) {
-        return { isValid: false, message: 'End is requried. ' }
+    if (!exp.duration) {
+        return { isValid: false, message: 'Duration is requried. ' }
     }
     return { isValid: true, message: 'The experience is valid.' }
 }
 
-export async function storeNFT(nft: ExperienceNFT): Promise<any> {
+export async function storeJson(nft: ExperienceNFT): Promise<any> {
     const jsonRandomName = `${uuidv4()}.json`;
     await generateQRCode();
-    const url = await pushNFT('./qrCode.png', nft, jsonRandomName);
+    const url = await pushNFT('./qrCode.png', {
+        title: nft.title,
+        description: nft.description,
+        duration: nft.duration,
+        start: nft.start
+    }, jsonRandomName);
     return { url };
 }
 
@@ -58,7 +47,7 @@ export async function storeExperience(hostID: string, experience: Experience): P
     return res;
 }
 
-export async function buyExperience(guestID: string, experienceID: string): Promise<ValidationResult> {
+export async function reserveExperience(guestID: string, experienceID: string): Promise<ValidationResult> {
     const experience = await ExperienceSchema.findById(experienceID);
     if (!experience) {
         return { isValid: false, message: "Invalid experience!" };
@@ -120,7 +109,7 @@ export async function rateExperience(guestID: string, experienceID: string, rate
     if (experience) {
         if (experience.guestID !== guestID)
             return { isValid: false, message: "Only the guest can rate the experience." }
-        if(!experience.expired) {
+        if (!experience.expired) {
             return { isValid: false, message: "Experience hasn't finished yet." }
         }
         transferLockedTokens(experience.guestID, experience.hostID, experience.duration);

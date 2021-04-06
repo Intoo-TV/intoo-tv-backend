@@ -1,10 +1,14 @@
 export interface ExperienceNFT {
     title: string;
-    properties: NFTProperties;
-}
-
-export interface NFTProperties {
-    name: string;
     description: string;
     image: string;
+    start: Date;
+    duration: number;
+}
+
+export interface CreateExperience {
+    nft: ExperienceNFT;
+    address: string;
+    templateId: number;
+    saveAsTemplate: boolean;
 }

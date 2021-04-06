@@ -12,7 +12,7 @@ const bucketName = process.env.BUCKET_NAME
 
 export async function pushNFT(imagePath: string, json: any, jsonName: string): Promise<string> {
   const imageUrl = await pushImage(imagePath)
-  json.properties.image = imageUrl;
+  json.image = imageUrl;
   const jsonLink = await pushJSONDocument(json, jsonName);
   return jsonLink;
 }
