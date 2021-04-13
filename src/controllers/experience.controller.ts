@@ -1,7 +1,7 @@
-import { biconomyCall, createTicket, initialize } from "../contracts";
+import { createAccessToEvent, createTicket, expireTicket } from "../contracts";
 import { Response } from "express";
 import { injectable } from "inversify";
-import { CreateExperience, ExperienceNFT, ExperienceSchema, UserSchema } from "../models";
+import { CreateExperience, ExperienceSchema, UserSchema } from "../models";
 import {
     reserveExperience,
     LoggerService,
@@ -31,31 +31,19 @@ export class ExperienceController {
             const validationResult = validateExperience(expModel.nft);
             if (validationResult.isValid) {
                 const url = await storeJson(expModel.nft);
-                await createTicket(expModel.address,url.url, expModel.templateId, expModel.saveAsTemplate);
-                // await biconomyCall(expModel.address,url.url, expModel.templateId, expModel.saveAsTemplate);
+                const tokenId = await createTicket(user.ethAddress, url.url, expModel.templateId, expModel.saveAsTemplate);
+                storeExperience(user.id, {
+                    tokenID: tokenId,
+                    start: expModel.nft.start,
+                    duration: expModel.nft.duration,
+                    hostID: user.id,
+                    guestID: undefined,
+                    expired: false
+                })
             } else {
                 res.status(400).send(validationResult);
             }
             res.status(200).send({ message: "Ticket created!" });
-        } catch (err) {
-            this.loggerService.error(err);
-            res.status(500).send({ error: "Something went wrong, please try again later." });
-        }
-    }
-
-    public post = async (req: any, res: Response) => {
-        try {
-            const user = await UserSchema.findOne({ email: req.user.email });
-            if (!user) {
-                return res.status(401).send({ error: "Unauthorized user! " });
-            }
-            const validationResult = validateExperience(req.body);
-            if (validationResult.isValid) {
-                const exp = await storeExperience(user.id, req.body);
-                res.status(201).send({ id: exp.id });
-            } else {
-                res.status(400).send(validationResult);
-            }
         } catch (err) {
             this.loggerService.error(err);
             res.status(500).send({ error: "Something went wrong, please try again later." });
@@ -134,6 +122,35 @@ export class ExperienceController {
                 $and: [{ expired: false }, { $and: [{ hostID: { $ne: user.id } }, { guestID: undefined }] }]
             }).exec();
             res.status(200).send({ experiences });
+        } catch (err) {
+            this.loggerService.error(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+
+    public postAccessToEvent = async (req: any, res: Response) => {
+        try {
+            // ticketId: string, url: string, hostAddress: string
+            const user = await UserSchema.findOne({ email: req.user.email });
+            if (!user) {
+                return res.status(401).send({ error: "Unauthorized user! " });
+            }
+            await createAccessToEvent(req.body.ticketId, '', user.ethAddress);
+            res.status(200).send({ message: "Posted access to event!" });
+        } catch (err) {
+            this.loggerService.error(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+
+    public expireExperience = async (req: any, res: Response) => {
+        try {
+            const user = await UserSchema.findOne({ email: req.user.email });
+            if (!user) {
+                return res.status(401).send({ error: "Unauthorized user! " });
+            }
+            await expireTicket(user.ethAddress, req.body.ticketId);
+            res.status(200).send({ message: "Posted access to event!" });
         } catch (err) {
             this.loggerService.error(err);
             res.status(500).send({ error: "Something went wrong, please try again later." });

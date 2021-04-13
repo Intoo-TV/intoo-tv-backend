@@ -1,7 +1,6 @@
 import { model, Model, Schema, Document } from "mongoose";
 
 export interface Experience { 
-    url: string;
     tokenID: number;
     expired: boolean;
     hostID: string;
@@ -14,11 +13,6 @@ export interface Experience {
 export interface ExperienceModel extends Experience, Document { }
 
 const experienceSchema: Schema = new Schema({
-    url: {
-        type: String,
-        required: true,
-        unique: true
-    },
     tokenID: {
         type: Number,
         required: true,

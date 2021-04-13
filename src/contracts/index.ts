@@ -2,6 +2,7 @@ import intooTVWhitelist from './IntooTVWhitelist.json';
 import ticketFactory from './TicketFactory.json';
 import { ethers, signer } from '../tools/ethers';
 import { Biconomy } from '@biconomy/mexa';
+import { Experience } from '../models';
 const userAddress = '0xd5548b2af98f4ac01e0c6702f3422cdc40801d98';
 
 require('dotenv').config()
@@ -102,7 +103,10 @@ export const addToWhitelist = async (userAddress) => {
   }
 };
 
-export const createTicket = async (address: string, url: string, template = -1, saveAsTemplate = false) => {
+
+
+
+export const createTicket = async (address: string, url: string, template = -1, saveAsTemplate = false): Promise<number> => {
   const ticketFactoryContractInst = ticketFactoryContract();
   ticketFactoryContractInst.on(
     'TicketCreated',
@@ -112,6 +116,7 @@ export const createTicket = async (address: string, url: string, template = -1, 
       console.log(_ticketCreator);
       console.log(_props);
       console.log(_templateIndex);
+      return ticketId;
     },
   );
   try {
@@ -120,6 +125,62 @@ export const createTicket = async (address: string, url: string, template = -1, 
       url,
       template,
       saveAsTemplate
+    );
+
+    console.log(result);
+    return result;
+  } catch (err) {
+    console.log(err);
+    return;
+  }
+}
+
+export const createAccessToEvent = async (ticketId: string, url: string, hostAddress: string) => {
+  const ticketFactoryContractInst = ticketFactoryContract();
+
+
+  ticketFactoryContractInst.on(
+    'ExperienceMatchingCreated',
+    (ticketId, host, guest, hostItemId, guestItemId) => {
+      console.log('ExperienceMatchingCreated!');
+      console.log(ticketId);
+      console.log(host);
+      console.log(guest);
+      console.log(hostItemId);
+      console.log(guestItemId);
+    },
+  );
+  try {
+    let result = await ticketFactoryContractInst.createAccessToEvent(
+      ticketId,
+      url,
+      hostAddress
+    );
+
+    console.log(result);
+    return result;
+  } catch (err) {
+    console.log(err);
+    return;
+  }
+}
+
+
+export const expireTicket = async (owner: string, ticketId: number) => {
+  const ticketFactoryContractInst = ticketFactoryContract();
+
+
+  ticketFactoryContractInst.on(
+    'ExperienceEnded',
+    (ticketId) => {
+      console.log('ExperienceEnded!');
+      console.log(ticketId);
+    },
+  );
+  try {
+    let result = await ticketFactoryContractInst.expireExperience(
+      owner,
+      ticketId
     );
 
     console.log(result);
