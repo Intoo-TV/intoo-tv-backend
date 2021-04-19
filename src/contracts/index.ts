@@ -116,6 +116,7 @@ export const createTicket = async (address: string, url: string, template = -1, 
       saveAsTemplate
     );
 
+    console.log(createTx);
     // Wait for transaction to finish
     const ticketTransactionResult = await createTx.wait();
     const { events } = ticketTransactionResult;
@@ -129,7 +130,7 @@ export const createTicket = async (address: string, url: string, template = -1, 
     }
 
     const tokenId = ticketCreatedEvent.args[0];
-    return tokenId;
+    return tokenId.toString();
   } catch (err) {
     console.log(err);
     return;

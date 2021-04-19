@@ -36,7 +36,7 @@ export async function storeJson(nft: ExperienceNFT): Promise<any> {
         duration: nft.duration,
         start: nft.start
     }, jsonRandomName);
-    return { url };
+    return url
 }
 
 export async function storeExperience(hostID: string, experience: Experience): Promise<ExperienceModel> {

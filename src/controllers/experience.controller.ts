@@ -21,7 +21,7 @@ export class ExperienceController {
     ) {
     }
 
-    public postNFT = async (req: any, res: Response) => {
+    public post = async (req: any, res: Response) => {
         try {
             const user = await UserSchema.findOne({ email: req.user.email });
             if (!user) {
@@ -31,9 +31,9 @@ export class ExperienceController {
             const validationResult = validateExperience(expModel.nft);
             if (validationResult.isValid) {
                 const url = await storeJson(expModel.nft);
-                const tokenId = await createTicket(user.ethAddress, url.url, expModel.templateId, expModel.saveAsTemplate);
+                const tokenId = await createTicket(user.ethAddress, url, expModel.templateId, expModel.saveAsTemplate);
                 storeExperience(user.id, {
-                    tokenID: tokenId,
+                    tokenID: +tokenId,
                     start: expModel.nft.start,
                     duration: expModel.nft.duration,
                     hostID: user.id,
