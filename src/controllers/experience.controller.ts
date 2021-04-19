@@ -40,10 +40,10 @@ export class ExperienceController {
                     guestID: undefined,
                     expired: false
                 })
+                res.status(200).send({ url });
             } else {
                 res.status(400).send(validationResult);
             }
-            res.status(200).send({ message: "Ticket created!" });
         } catch (err) {
             this.loggerService.error(err);
             res.status(500).send({ error: "Something went wrong, please try again later." });
