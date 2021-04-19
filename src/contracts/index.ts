@@ -108,27 +108,28 @@ export const addToWhitelist = async (userAddress) => {
 
 export const createTicket = async (address: string, url: string, template = -1, saveAsTemplate = false): Promise<number> => {
   const ticketFactoryContractInst = ticketFactoryContract();
-  ticketFactoryContractInst.on(
-    'TicketCreated',
-    (ticketId, _ticketCreator, _props, _templateIndex) => {
-      console.log('TicketCreated!');
-      console.log(ticketId);
-      console.log(_ticketCreator);
-      console.log(_props);
-      console.log(_templateIndex);
-      return ticketId;
-    },
-  );
   try {
-    let result = await ticketFactoryContractInst.createTicket(
+    let createTx = await ticketFactoryContractInst.createTicket(
       address,
       url,
       template,
       saveAsTemplate
     );
 
-    console.log(result);
-    return result;
+    // Wait for transaction to finish
+    const ticketTransactionResult = await createTx.wait();
+    const { events } = ticketTransactionResult;
+    const ticketCreatedEvent = events.find(
+      e => e.event === 'TicketCreated',
+    );
+
+
+    if (!ticketCreatedEvent) {
+      throw new Error('Something went wrong');
+    }
+
+    const tokenId = ticketCreatedEvent.args[0];
+    return tokenId;
   } catch (err) {
     console.log(err);
     return;
