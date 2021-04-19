@@ -8,7 +8,6 @@ export interface ExperienceNFT {
 
 export interface CreateExperience {
     nft: ExperienceNFT;
-    address: string;
     templateId: number;
     saveAsTemplate: boolean;
 }
