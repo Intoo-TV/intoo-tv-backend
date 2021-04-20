@@ -1,10 +1,9 @@
 import * as bcrypt from 'bcrypt';
 import { User, UserSchema } from '../models/user';
 import { injectable } from "inversify";
-import { createToken } from '../services/auth.service';
 import { addToWhitelist } from "../contracts";
 import { ExperienceSchema } from '../models';
-import { tip } from '../services';
+import { tip, createToken } from '../services';
 
 @injectable()
 export class UserController {

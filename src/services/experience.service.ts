@@ -10,6 +10,7 @@ import {
     UserSchema,
     UserModel
 } from '../models';
+import { getTokenURI, createAccessToEvent, expireTicket } from '../contracts';
 
 export function validateExperience(exp: ExperienceNFT): ValidationResult {
     if (!exp.title) {
@@ -25,6 +26,10 @@ export function validateExperience(exp: ExperienceNFT): ValidationResult {
         return { isValid: false, message: 'Duration is requried. ' }
     }
     return { isValid: true, message: 'The experience is valid.' }
+}
+
+export async function createAccessNFTs(tokenID: string, guestAddress: string) {
+
 }
 
 export async function storeJson(nft: ExperienceNFT): Promise<any> {
@@ -64,9 +69,13 @@ export async function reserveExperience(guestID: string, experienceID: string): 
         return { isValid: false, message: "The guest doesn't have enough exp tokens!" };
     }
 
+    const originalURI = await getTokenURI(experience.tokenID);
+    await createAccessToEvent(experience.tokenID, originalURI, guest.ethAddress);
+
     await lockBalance(guest, experience.duration);
 
     experience.guestID = guestID;
+
     await experience.save();
 
     return { isValid: true, message: "Assigned guest to the experience." };
@@ -91,13 +100,19 @@ async function transferLockedTokens(fromID: string, toID: string, amount: number
     return { isValid: true, message: "Transfer completed." };
 }
 
-export async function startExperience(guestID: string, experienceID: string): Promise<ValidationResult> {
+export async function startExperience(hostID: string, experienceID: string): Promise<ValidationResult> {
     const experience = await ExperienceSchema.findById(experienceID);
     if (experience) {
-        if (experience.guestID !== guestID)
-            return { isValid: false, message: "Only the guest can start the experience." }
+        if (experience.hostID !== hostID)
+            return { isValid: false, message: "Only the host can start the experience." }
+
+        const host = await UserSchema.findById(hostID);
         experience.expired = true;
+        await expireTicket(host.ethAddress, experience.tokenID);
+        console.log('expired Ticket');
         experience.save();
+        console.log('save');
+
         return { isValid: true, message: "Experience started!" }
     } else {
         return { isValid: false, message: "Invalid experience." }

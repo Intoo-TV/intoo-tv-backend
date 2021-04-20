@@ -109,11 +109,16 @@ export const addToWhitelist = async (userAddress) => {
 export const createTicket = async (address: string, url: string, template = -1, saveAsTemplate = false): Promise<number> => {
   const ticketFactoryContractInst = ticketFactoryContract();
   try {
+    let overrides = {
+      // The maximum units of gas for the transaction to use
+      gasLimit: 2300000,
+    };
     let createTx = await ticketFactoryContractInst.createTicket(
       address,
       url,
       template,
-      saveAsTemplate
+      saveAsTemplate,
+      overrides
     );
 
     console.log(createTx);
@@ -137,30 +142,26 @@ export const createTicket = async (address: string, url: string, template = -1, 
   }
 }
 
-export const createAccessToEvent = async (ticketId: string, url: string, hostAddress: string) => {
+export const createAccessToEvent = async (ticketId: number, url: string, guestAddress: string) => {
   const ticketFactoryContractInst = ticketFactoryContract();
 
-
-  ticketFactoryContractInst.on(
-    'ExperienceMatchingCreated',
-    (ticketId, host, guest, hostItemId, guestItemId) => {
-      console.log('ExperienceMatchingCreated!');
-      console.log(ticketId);
-      console.log(host);
-      console.log(guest);
-      console.log(hostItemId);
-      console.log(guestItemId);
-    },
-  );
   try {
-    let result = await ticketFactoryContractInst.createAccessToEvent(
+    let createTx = await ticketFactoryContractInst.createAccessToEvent(
       ticketId,
       url,
-      hostAddress
+      guestAddress
+    );
+    const createAccessToEventResult = await createTx.wait();
+    const { events } = createAccessToEventResult;
+    const accessCreatedEvent = events.find(
+      e => e.event === 'ExperienceMatchingCreated',
     );
 
-    console.log(result);
-    return result;
+
+    if (!accessCreatedEvent) {
+      throw new Error('Something went wrong');
+    }
+
   } catch (err) {
     console.log(err);
     return;
@@ -182,6 +183,21 @@ export const expireTicket = async (owner: string, ticketId: number) => {
   try {
     let result = await ticketFactoryContractInst.expireExperience(
       owner,
+      ticketId
+    );
+
+    console.log(result);
+    return result;
+  } catch (err) {
+    console.log(err);
+    return;
+  }
+}
+
+export const getTokenURI = async (ticketId: number) => {
+  const ticketFactoryContractInst = ticketFactoryContract();
+  try {
+    let result = await ticketFactoryContractInst.tokenURI(
       ticketId
     );
 
