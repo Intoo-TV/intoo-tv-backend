@@ -14,6 +14,7 @@ import {
     storeExperience,
     validateExperience,
     storeJson,
+    getOpenExperiences,
 } from "../services";
 
 @injectable()
@@ -123,9 +124,8 @@ export class ExperienceController {
             if (!user) {
                 return res.status(401).send({ error: "Unauthorized user! " });
             }
-            const experiences = await ExperienceSchema.find({
-                $and: [{ expired: false }, { $and: [{ hostID: { $ne: user.id } }, { guestID: undefined }] }]
-            }).exec();
+
+            const experiences = await getOpenExperiences(user.id);
             res.status(200).send({ experiences });
         } catch (err) {
             this.loggerService.error(err);

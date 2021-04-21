@@ -172,3 +172,18 @@ export async function generateQRCode() {
     var qr_svg = qr.image(generateRandomSequence(), { type: 'png' });
     qr_svg.pipe(require('fs').createWriteStream('qrCode.png'));
 }
+
+export async function getOpenExperiences(userID: string) {
+    const experiences = await ExperienceSchema.find({
+        $and: [{ expired: false }, { $and: [{ hostID: { $ne: userID } }, { guestID: undefined }] }]
+    }).exec();
+
+    const result = Promise.all(experiences.map(async exp => (
+        {
+            id: exp.id,
+            tokenID: exp.tokenID,
+            url: await getTokenURI(exp.tokenID)
+        })));
+
+    return result;
+}
