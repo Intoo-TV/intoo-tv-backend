@@ -18,6 +18,8 @@ export class ExperienceRouter {
     this._router.post("/:experienceID/reserve", passport.authenticate('jwt', { session: false }), this.experienceController.reserve);
     this._router.post("/:experienceID/start", passport.authenticate('jwt', { session: false }), this.experienceController.start);
     this._router.post("/:experienceID/rate", passport.authenticate('jwt', { session: false }), this.experienceController.rate);
+    this._router.get("/:experienceID/stream", passport.authenticate('jwt', { session: false }), this.experienceController.getStream);
+    this._router.post("/:experienceID/stream", passport.authenticate('jwt', { session: false }), this.experienceController.generateStream);
   }
 
   public get router(): Router {

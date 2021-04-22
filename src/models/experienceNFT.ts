@@ -8,6 +8,8 @@ export interface Experience {
     start: Date;
     duration: number;
     rate?: number;
+    streamUrl?: string;
+    streamKey?: string;
 }
 
 export interface ExperienceModel extends Experience, Document { }
@@ -42,6 +44,16 @@ const experienceSchema: Schema = new Schema({
     },
     rate: {
         type: Number,
+        required: false,
+        default: undefined
+    },
+    streamUrl: {
+        type: String,
+        required: false,
+        default: undefined
+    },
+    streamKey: {
+        type: String,
         required: false,
         default: undefined
     },

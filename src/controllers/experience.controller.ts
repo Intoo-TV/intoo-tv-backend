@@ -15,6 +15,8 @@ import {
     validateExperience,
     storeJson,
     getOpenExperiences,
+    getStreamUrl,
+    generateStreamUrl,
 } from "../services";
 
 @injectable()
@@ -133,7 +135,28 @@ export class ExperienceController {
         }
     }
 
-    
+    public generateStream = async (req: any, res: Response) => {
+        try {
+            const experienceID: string = req.params.experienceID;
 
+            const stream = await generateStreamUrl(experienceID);
+            res.status(200).send({ stream });
+        } catch (err) {
+            this.loggerService.error(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+
+
+    public getStream = async (req: any, res: Response) => {
+        try {
+            const experienceID: string = req.params.experienceID;
+            const stream = await getStreamUrl(experienceID);
+            res.status(200).send({ stream });
+        } catch (err) {
+            this.loggerService.error(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
 }
 

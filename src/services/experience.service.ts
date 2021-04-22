@@ -11,6 +11,7 @@ import {
     UserModel
 } from '../models';
 import { getTokenURI, createAccessToEvent, expireTicket } from '../contracts';
+import axios from 'axios';
 
 export function validateExperience(exp: ExperienceNFT): ValidationResult {
     if (!exp.title) {
@@ -202,3 +203,43 @@ export async function getUserExperiences(userID: string, past: boolean) {
         })));
     return result;
 }
+
+export async function generateStreamUrl(experienceID: string) {
+
+    const result = await axios.post(`https://api.mux.com/video/v1/live-streams`,
+        {
+            "playback_policy": "public",
+            "new_asset_settings": {
+                "playback_policy": "public"
+            }
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            auth: {
+                username: '20345929-b9a2-424f-b565-be115ea27ff8',
+                password: 'sa3dLvHFkmxuphEs2rWVVNiL5BEbJuAeIUoEOt+8e2MNddkou/3HBkhrrvGS7/JIuLtIge76SWv'
+            }
+        }
+    );
+    const experience = await ExperienceSchema.findById(experienceID);
+
+    const streamKey = result.data.data.stream_key;
+    const playbackID = result.data.data.playback_ids[0].id;
+    const streamUrl = `https://stream.mux.com/${playbackID}.m3u8`;
+
+    experience.streamKey = streamKey;
+    experience.streamUrl = streamUrl;
+    experience.save();
+    return { streamKey, streamUrl };
+}
+
+
+
+export async function getStreamUrl(experienceID: string) {
+    const experience = await ExperienceSchema.findById(experienceID);
+    return { streamUrl: experience.streamUrl };
+}
+
+
