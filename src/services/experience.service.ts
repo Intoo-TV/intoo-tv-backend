@@ -187,3 +187,18 @@ export async function getOpenExperiences(userID: string) {
 
     return result;
 }
+
+
+
+export async function getUserExperiences(userID: string, past: boolean) {
+    const experiences = await ExperienceSchema.find({
+        $and: [{ expired: past }, { $or: [{ hostID: userID }, { guestID: userID }] }]
+    }).exec();
+    const result = Promise.all(experiences.map(async exp => (
+        {
+            id: exp.id,
+            tokenID: exp.tokenID,
+            url: await getTokenURI(exp.tokenID)
+        })));
+    return result;
+}

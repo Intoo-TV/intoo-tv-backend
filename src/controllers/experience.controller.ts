@@ -1,10 +1,10 @@
 import * as contracts from "../contracts";
 import { Response } from "express";
 import { injectable } from "inversify";
-import { 
-    CreateExperience, 
-    ExperienceSchema, 
-    UserSchema 
+import {
+    CreateExperience,
+    ExperienceSchema,
+    UserSchema
 } from "../models";
 import {
     reserveExperience,
@@ -132,5 +132,8 @@ export class ExperienceController {
             res.status(500).send({ error: "Something went wrong, please try again later." });
         }
     }
+
+    
+
 }
 

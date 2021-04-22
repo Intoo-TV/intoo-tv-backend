@@ -3,8 +3,11 @@ import { User, UserSchema } from '../models/user';
 import { injectable } from "inversify";
 import { addToWhitelist } from "../contracts";
 import { ExperienceSchema } from '../models';
-import { tip, createToken } from '../services';
+import { tip, createToken, getUserExperiences } from '../services';
+require('dotenv').config()
 
+const jwt = require('jsonwebtoken');
+const algorithm = { algorithm: "HS256" };
 @injectable()
 export class UserController {
 
@@ -104,9 +107,7 @@ export class UserController {
             const user = await UserSchema.findOne({ email: req.user.email });
             const past: boolean = req.query.past === 'true';
             if (user) {
-                const experiences = await ExperienceSchema.find({
-                    $and: [{ expired: past }, { $or: [{ hostID: user.id }, { guestID: user.id }] }]
-                }).exec();
+                const experiences = await getUserExperiences(user.id, past);
                 return res.status(200).send(experiences);
             } else {
                 return res.status(401).send({ error: "Unauthorized user." })
@@ -132,6 +133,25 @@ export class UserController {
             console.log(err);
             res.status(500).send({ error: "Something went wrong, please try again later." });
         }
+    }
+
+    public getThetaAccessToken = async (req: any, res: any) => {
+        const user = await UserSchema.findOne({ email: req.user.email });
+        if (!user) {
+            return res.status(401).send({ error: "Unauthorized user! " });
+        }
+        let expiration = new Date().getTime() / 1000;
+        console.log()
+        expiration += 4320; // 3 days
+        let payload = {
+            api_key: process.env.THETA_API_KEY,
+            user_id: user.id,
+            iss: "auth0",
+            exp: expiration
+        };
+        const accessToken =  jwt.sign(payload, process.env.THETA_API_SECRET, algorithm);
+        res.status(200).send({ accessToken });
+
     }
 }
 
