@@ -108,7 +108,7 @@ export class UserController {
             const past: boolean = req.query.past === 'true';
             if (user) {
                 const experiences = await getUserExperiences(user.id, past);
-                return res.status(200).send(experiences);
+                return res.status(200).send({ experiences });
             } else {
                 return res.status(401).send({ error: "Unauthorized user." })
             }
@@ -149,7 +149,7 @@ export class UserController {
             iss: "auth0",
             exp: expiration
         };
-        const accessToken =  jwt.sign(payload, process.env.THETA_API_SECRET, algorithm);
+        const accessToken = jwt.sign(payload, process.env.THETA_API_SECRET, algorithm);
         res.status(200).send({ accessToken });
 
     }
