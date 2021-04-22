@@ -17,6 +17,7 @@ import {
     getOpenExperiences,
     getStreamUrl,
     generateStreamUrl,
+    getExperienceByID,
 } from "../services";
 
 @injectable()
@@ -129,6 +130,22 @@ export class ExperienceController {
 
             const experiences = await getOpenExperiences(user.id);
             res.status(200).send({ experiences });
+        } catch (err) {
+            this.loggerService.error(err);
+            res.status(500).send({ error: "Something went wrong, please try again later." });
+        }
+    }
+
+
+    public getByID = async (req: any, res: Response) => {
+        try {
+            const user = await UserSchema.findOne({ email: req.user.email });
+            if (!user) {
+                return res.status(401).send({ error: "Unauthorized user! " });
+            }
+            const experienceID: string = req.params.experienceID;
+            const experience = await getExperienceByID(experienceID);
+            res.status(200).send(experience);
         } catch (err) {
             this.loggerService.error(err);
             res.status(500).send({ error: "Something went wrong, please try again later." });

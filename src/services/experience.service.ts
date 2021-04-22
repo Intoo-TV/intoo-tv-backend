@@ -189,7 +189,14 @@ export async function getOpenExperiences(userID: string) {
     return result;
 }
 
-
+export async function getExperienceByID(experienceID: string) {
+    const exp = await ExperienceSchema.findById(experienceID) as any;
+    return  {
+        id: exp.id,
+        tokenID: exp.tokenID,
+        url: await getTokenURI(exp.tokenID)
+    };
+}
 
 export async function getUserExperiences(userID: string, past: boolean) {
     const experiences = await ExperienceSchema.find({
